@@ -1,0 +1,48 @@
+---
+
+# create directory
+- name: create main directories
+  file:
+    state: directory
+    mode: 0755
+    path: "/etc/docker/"
+
+# env
+- name: template {{ container }} env file
+  template:
+    src: templates/template.env.j2
+    dest: /etc/docker/{{ container }}.env
+
+# service
+- name: template {{ container }} service file
+  template:
+    src: templates/container.service
+    dest: /etc/systemd/system/{{ container }}.service
+  register: unit
+- name: Enable service
+  command: systemctl enable {{ container }}.service
+  
+- name: Get latest Image
+  community.docker.docker_image:
+    name: "{{ container_registry }}/{{ registryns }}/{{ image }}"
+    tag: "{{ tag }}"
+    source: pull
+    force_source: "yes"
+
+- name: Reload SystemD
+  command: systemctl daemon-reload
+  when: unit.changed
+
+- name: start {{ container }} Service Container
+  command: systemctl restart {{ container }}.service
+
+- name: Waiting for {{ container }} to be running
+  shell: >
+    docker inspect -f \
+      {% raw %}'{{ json .State }}'{% endraw %} \
+      {{ container }}
+  register: container_state
+  until: (container_state.stdout|from_json).Running and (container_state.stdout|from_json).ExitCode == 0
+  delay: 10
+  retries: 3
+
