@@ -1,0 +1,29 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: deploy-container
+  author: marcelofpfelix
+  description: deploy container
+  company: "marcelofpfelix"
+  license: "license (BSD, MIT)"
+  min_ansible_version: 2.4
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - stretch
+        - buster
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - xenial
+        - bionic
+        - focal
+        - jammy
+  galaxy_tags:
+    - containers
+    - docker
